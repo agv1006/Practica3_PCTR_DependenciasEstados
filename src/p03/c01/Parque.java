@@ -6,27 +6,26 @@ import java.util.Hashtable;
 public class Parque implements IParque{
 
 
-	private int personasTotales; //LMA/AGV
+	private final int personasTotales = 50; //LMA/AGV
 	private int contadorPersonasTotales;
 	private Hashtable<String, Integer> contadoresPersonasPuerta;
 	
 	
 	public Parque() {
-		personasTotales = 50; //LMA/AGV
 		contadorPersonasTotales = 0;
 		contadoresPersonasPuerta = new Hashtable<String, Integer>();
 	}
 
 
 	@Override
-	public void entrarAlParque(String puerta){		// TODO
+	public synchronized void entrarAlParque(String puerta){		// TODO
 		
 		// Si no hay entradas por esa puerta, inicializamos
 		if (contadoresPersonasPuerta.get(puerta) == null){
 			contadoresPersonasPuerta.put(puerta, 0);
 		}
 		
-		// TODO
+		comprobarAntesDeEntrar();
 				
 		
 		// Aumentamos el contador total y el individual
@@ -36,21 +35,20 @@ public class Parque implements IParque{
 		// Imprimimos el estado del parque
 		imprimirInfo(puerta, "Entrada");
 		
-		// TODO
+		checkInvariante();
 		
-		
-		// TODO
+		notifyAll();
 		
 	}
 	
-	public void salirDelParque(String puerta){		// TODO
+	public synchronized void salirDelParque(String puerta){		// TODO
 		
 		// Si no hay salidas por esa puerta, inicializamos
 		if (contadoresPersonasPuerta.get(puerta) == null){
 			contadoresPersonasPuerta.put(puerta, 0);
 		}
 		
-		// TODO
+		comprobarAntesDeSalir();
 				
 		
 		// Decrementamos el contador total y el individual
@@ -58,12 +56,11 @@ public class Parque implements IParque{
 		contadoresPersonasPuerta.put(puerta, contadoresPersonasPuerta.get(puerta)-1);
 		
 		// Imprimimos el estado del parque
-		imprimirInfo(puerta, "Salida");
+		imprimirInfo(puerta, "Salida");		
 		
-		// TODO
+		checkInvariante();
 		
-		
-		// TODO
+		notifyAll();
 		
 	}
 	
@@ -89,21 +86,27 @@ public class Parque implements IParque{
 	
 	protected void checkInvariante() {
 		assert sumarContadoresPuerta() == contadorPersonasTotales : "INV: La suma de contadores de las puertas debe ser igual al valor del contador del parte";
-		// TODO 
-		// TODO
+		assert contadorPersonasTotales <= personasTotales : "INV: No pueden haber más personas en el parque que lo que permite el aforo máximo";
+		assert contadorPersonasTotales >= 0 : "INV: No puede haber un aforo negativo en el parque";
 	}
 
 	protected void comprobarAntesDeEntrar(){	// TODO
-		//
-		// TODO
-		//
+		while (contadorPersonasTotales == personasTotales) {
+			try {
+				wait();
+			} catch (InterruptedException ex) {
+				System.out.println(ex.getMessage());
+			}
+		}
 	}
 
 	protected void comprobarAntesDeSalir(){		// TODO
-		//
-		// TODO
-		//
+		while (contadorPersonasTotales == 0) {
+			try {
+				wait();
+			} catch (InterruptedException ex) {
+				System.out.println(ex.getMessage());
+			}
+		}
 	}
-
-
 }
